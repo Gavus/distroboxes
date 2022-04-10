@@ -1,0 +1,17 @@
+FROM docker.io/library/ubuntu:20.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update
+
+COPY missing-docs /
+RUN apt-get -y reinstall $(cat missing-docs)
+RUN rm /missing-docs
+
+COPY extra-packages /
+RUN apt-get -y install $(cat extra-packages)
+RUN rm /extra-packages
+
+RUN yes | unminimize
+
+RUN apt-get clean

@@ -1,0 +1,22 @@
+FROM docker.io/library/ubuntu:22.10
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN dpkg --add-architecture i386
+RUN apt-get update
+
+COPY missing-docs /
+RUN apt-get -y reinstall $(cat missing-docs)
+RUN rm /missing-docs
+
+COPY extra-packages /
+RUN apt-get -y install $(cat extra-packages)
+RUN rm /extra-packages
+RUN ln -srf /usr/bin/python3 /usr/bin/python
+
+RUN yes | unminimize
+
+COPY install-lazygit.sh /
+RUN /install-lazygit.sh && rm /install-lazygit.sh
+
+RUN apt-get clean

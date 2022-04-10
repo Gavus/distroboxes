@@ -1,0 +1,25 @@
+on: [push]
+
+name: Build docker images
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build
+        run: bash ./build-all.sh
+      - name: Save
+        run: bash ./save-all.sh
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: ubuntu-distrobox-20.04
+          path: ./ubuntu-distrobox/20.04/ubuntu-distrobox-20.04.tar.gz
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: ubuntu-distrobox-22.10
+          path: ./ubuntu-distrobox/22.10/ubuntu-distrobox-22.10.tar.gz
