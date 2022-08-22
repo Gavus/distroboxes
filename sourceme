@@ -49,6 +49,6 @@ function saveimage {
 	cd "$1" || return 1
 	local image=$(dirname "$1")
 	local label=$(basename "$1")
-	"$contman" save "localhost/$image:$label" | gzip > "$image-$label.tar.gz"
+	"$contman" save "$image:$label" | gzip > "$image-$label.tar.gz"
 	cd - || return 1
 }
