@@ -1,25 +1,29 @@
 #!/bin/bash 
+# shellcheck disable=SC2155
 
 function getcontman {
-	local contman=""
+	local contman="$DBX_CONTAINER_MANAGER"
 
-	if command -v podman > /dev/null; then
-		contman="podman"
-	elif command -v docker > /dev/null; then
-		contman="docker"
-	else
-		echo "You need to install podman or docker."
+	if test -z "$contman"; then
+		if command -v podman > /dev/null; then
+			contman="podman"
+		elif command -v docker > /dev/null; then
+			contman="docker"
+		else
+			echo "You need to install podman or docker."
+		fi
 	fi
 
 	echo "$contman"
 }
 
 function getbuildargs {
+	local contman=$(getcontman)
 	local buildargs=""
 
-	if command -v podman > /dev/null; then
+	if test "$contman" = "podman"; then
 		buildargs="--pull-always --squash-all"
-	elif command -v docker > /dev/null; then
+	elif test "$contman" = "docker"; then
 		buildargs="-f ./Containerfile"
 	else
 		echo "You need to install podman or docker."
@@ -32,19 +36,19 @@ function buildimage {
 	local contman="$(getcontman)"
 	local buildargs="$(getbuildargs)"
 
-	cd $1
+	cd "$1" || return 1
 	local image=$(dirname "$1")
 	local label=$(basename "$1")
 	"$contman" build . $buildargs --tag "$image:$label"
-	cd -
+	cd - || return 1
 }
 
 function saveimage {
 	local contman="$(getcontman)"
 
-	cd $1
+	cd "$1" || return 1
 	local image=$(dirname "$1")
 	local label=$(basename "$1")
 	echo "$contman" save "localhost/$image:$label" | gzip > "$image-$label.tar.gz"
-	cd -
+	cd - || return 1
 }
