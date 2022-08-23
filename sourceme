@@ -24,7 +24,7 @@ function getbuildargs {
 	if test "$contman" = "podman"; then
 		buildargs="--pull-always --squash-all"
 	elif test "$contman" = "docker"; then
-		buildargs="-f ./Containerfile"
+		buildargs="-f ./Containerfile --force-rm"
 	else
 		echo "You need to install podman or docker."
 	fi
@@ -32,14 +32,26 @@ function getbuildargs {
 	echo "$buildargs"
 }
 
+function gettag {
+	# args example: ubuntu-distrobox/20.04 :
+	local prefix="./"
+	local image=$(dirname "$1")
+	local label=$(basename "$1")
+	local separator=$2
+
+	image=${image#"$prefix"}
+
+	echo "$image$separator$label"
+}
+
 function buildimage {
 	local contman="$(getcontman)"
 	local buildargs="$(getbuildargs)"
 
 	cd "$1" || return 1
-	local image=$(dirname "$1")
-	local label=$(basename "$1")
-	"$contman" build . $buildargs --tag "$image:$label"
+	local tag=$(gettag "$1" ":")
+	# shellcheck disable=SC2086
+	"$contman" build . $buildargs --tag "$tag"
 	cd - || return 1
 }
 
@@ -47,8 +59,8 @@ function saveimage {
 	local contman="$(getcontman)"
 
 	cd "$1" || return 1
-	local image=$(dirname "$1")
-	local label=$(basename "$1")
-	"$contman" save "$image:$label" | gzip > "$image-$label.tar.gz"
+	local tag=$(gettag "$1" ":")
+	local filename=$(gettag "$1" "-")
+	"$contman" save "$tag" | gzip > "$filename.tar.gz"
 	cd - || return 1
 }
