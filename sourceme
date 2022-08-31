@@ -24,7 +24,7 @@ function getbuildargs {
 	if test "$contman" = "podman"; then
 		buildargs="--pull-always --squash-all"
 	elif test "$contman" = "docker"; then
-		buildargs="-f ./Containerfile --force-rm"
+		buildargs="-f ./Containerfile --force-rm --pull --squash --no-cache"
 	else
 		echo "You need to install podman or docker."
 	fi
